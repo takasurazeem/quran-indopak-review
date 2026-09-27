@@ -153,7 +153,8 @@ async function load(surah) {
   current = surah;
   const data = await (await fetch(dataURL(`data/${surah}.json`))).json();
   const meta = index.find((s) => s.surah === surah);
-  document.getElementById('title').textContent = meta?.name || `Surah ${surah}`;
+  document.getElementById('tname').textContent = meta?.name || `Surah ${surah}`;
+  document.getElementById('tarabic').textContent = meta?.arabic || '';
   document.getElementById('meta').textContent =
     `${meta?.ayahs ?? 0} ayat · ${meta?.spans ?? 0} coloured spans · ${[...targets].filter((k) => k.startsWith(`${surah}:`)).length} flagged for review`;
   renderSurah(data);
@@ -185,14 +186,34 @@ function renderTargets() {
 function renderList() {
   const list = document.getElementById('list');
   list.textContent = '';
-  const filter = document.getElementById('filter').value.trim();
+  const filter = document.getElementById('filter').value.trim().toLowerCase();
   for (const surah of index) {
-    if (filter && !`${surah.surah} ${surah.name}`.includes(filter)) continue;
+    if (filter && !`${surah.surah} ${surah.name} ${surah.arabic || ''}`.toLowerCase().includes(filter)) continue;
     const item = document.createElement('li');
     const button = document.createElement('button');
-    button.textContent = `${surah.surah}. ${surah.name}`;
-    if (surah.surah === current) button.className = 'active';
-    button.addEventListener('click', () => { document.getElementById('drawer').hidden = true; load(surah.surah); });
+    button.type = 'button';
+    button.setAttribute('role', 'option');
+    if (surah.surah === current) {
+      button.className = 'active';
+      button.setAttribute('aria-selected', 'true');
+    }
+    const number = document.createElement('span');
+    number.className = 'num';
+    number.textContent = toArabicDigits(surah.surah);
+    const label = document.createElement('span');
+    label.className = 'label';
+    label.textContent = surah.name;
+    button.append(number, label);
+    if (surah.arabic) {
+      const arabic = document.createElement('span');
+      arabic.className = 'ar';
+      arabic.textContent = surah.arabic;
+      button.appendChild(arabic);
+    }
+    button.addEventListener('click', () => {
+      setDropdown(false);
+      load(surah.surah);
+    });
     item.appendChild(button);
     list.appendChild(item);
   }
@@ -230,9 +251,36 @@ document.getElementById('export').addEventListener('click', () => {
   link.click();
 });
 
-document.getElementById('menu').addEventListener('click', () => {
-  const drawer = document.getElementById('drawer');
-  drawer.hidden = !drawer.hidden;
+const dropdown = document.getElementById('dropdown');
+const titleButton = document.getElementById('title');
+
+function setDropdown(open) {
+  dropdown.hidden = !open;
+  titleButton.setAttribute('aria-expanded', String(open));
+  if (open) {
+    renderList();
+    // Focusing the filter on desktop speeds up jumping; on touch it would throw a
+    // keyboard over the list, so it is left alone there.
+    if (window.matchMedia('(min-width: 700px)').matches) document.getElementById('filter').focus();
+    renderList();
+    dropdown.querySelector('.active')?.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+titleButton.addEventListener('click', (event) => {
+  event.stopPropagation();
+  setDropdown(dropdown.hidden);
+});
+document.addEventListener('click', (event) => {
+  if (!dropdown.hidden && !dropdown.contains(event.target) && !titleButton.contains(event.target)) {
+    setDropdown(false);
+  }
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !dropdown.hidden) {
+    setDropdown(false);
+    titleButton.focus();
+  }
 });
 document.getElementById('filter').addEventListener('input', renderList);
 document.getElementById('prev').addEventListener('click', () => current > 1 && load(current - 1));
