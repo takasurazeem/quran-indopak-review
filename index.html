@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IndoPak Tajweed Review — Qur'an For Everyone</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="bar">
+    <button id="menu" aria-label="Surah list">☰</button>
+    <h1 id="title">…</h1>
+    <div class="nav">
+      <button id="prev" aria-label="Previous surah">›</button>
+      <button id="next" aria-label="Next surah">‹</button>
+    </div>
+  </div>
+  <p class="meta" id="meta"></p>
+</header>
+
+<aside id="drawer" hidden>
+  <input id="filter" type="search" placeholder="Filter surah…" aria-label="Filter surah">
+  <ol id="list"></ol>
+</aside>
+
+<main>
+  <section class="notice">
+    <strong>Review copy.</strong> This renders the candidate IndoPak text and its tajweed
+    colouring. Differences against the licensed reference are already measured
+    (<span id="summary"></span>); the ayat listed below are the ones that still need a
+    human eye. Mark each one <em>Correct</em> or <em>Wrong</em> — your marks are saved in this
+    browser and can be exported at the end.
+  </section>
+  <div id="review-targets" class="targets"></div>
+  <div id="page"></div>
+</main>
+
+<footer>
+  <div class="legend" id="legend"></div>
+  <p class="credit">
+    IndoPak text and tajweed annotations from the <em>al_quran_v3</em> digitisation of a
+    printed IndoPak tajweed mushaf (non-commercial, attribution). Review build — not for
+    distribution. <span id="progress"></span>
+  </p>
+  <button id="export">Export review</button>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
