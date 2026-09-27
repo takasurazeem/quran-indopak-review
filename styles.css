@@ -71,7 +71,11 @@ body {
 
 .meta { margin: 0; padding: 0 16px 8px; text-align: center; color: var(--muted); font-size: 12.5px; }
 
-/* Floating menu, anchored under the title and scrolling with the pinned header. */
+/* Floating menu, anchored under the title and scrolling with the pinned header.
+   The [hidden] rule is explicit: an author `display: flex` beats the user agent's
+   [hidden] rule, so without this the panel is on screen at all times. */
+.dropdown[hidden] { display: none; }
+
 .dropdown {
   position: absolute;
   top: calc(100% - 6px);
