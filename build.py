@@ -69,6 +69,12 @@ def main():
     with urllib.request.urlopen(SOURCE) as response:
         asset = json.loads(response.read().decode("utf-8"))
 
+    names = {}
+    existing = os.path.join(OUT, "index.json")
+    if os.path.exists(existing):
+        with open(existing, encoding="utf-8") as handle:
+            names = {row["surah"]: row["name"] for row in json.load(handle)}
+
     index, words_total, spans_total = [], 0, 0
     for surah in sorted((int(k) for k in asset), key=int):
         ayahs = []
@@ -90,7 +96,9 @@ def main():
             ayahs.append({"a": ayah, "w": words})
         with open(os.path.join(OUT, f"{surah}.json"), "w", encoding="utf-8") as handle:
             json.dump({"surah": surah, "ayahs": ayahs}, handle, ensure_ascii=False, separators=(",", ":"))
-        index.append({"surah": surah, "name": f"Surah {surah}", "ayahs": len(ayahs),
+        # Names are not in the source asset; reuse whatever the committed index
+        # already carries so regenerating does not degrade the surah menu.
+        index.append({"surah": surah, "name": names.get(surah, f"Surah {surah}"), "ayahs": len(ayahs),
                       "spans": sum(len(w["s"]) for a in ayahs for w in a["w"])})
     with open(os.path.join(OUT, "index.json"), "w", encoding="utf-8") as handle:
         json.dump(index, handle, ensure_ascii=False, separators=(",", ":"))
